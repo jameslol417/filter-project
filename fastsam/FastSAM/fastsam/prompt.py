@@ -197,6 +197,8 @@ class FastSAMPrompt:
              mask_random_color=False,
              better_quality=True,
              retina=False,
+             apply_gaussian_blur=True,
+             colors=[0 / 255, 0 / 255, 0 / 255],
              withContours=True) -> np.ndarray:
         if isinstance(annotations[0], dict):
             annotations = [annotation['segmentation'] for annotation in annotations]
@@ -247,6 +249,8 @@ class FastSAMPrompt:
                 retinamask=retina,
                 target_height=original_h,
                 target_width=original_w,
+                apply_gaussian_blur=apply_gaussian_blur,
+                colors=colors
             )
 
         if isinstance(annotations, torch.Tensor):
@@ -409,7 +413,7 @@ class FastSAMPrompt:
         else:
             # decides color of mask, colors is RGB value
             color = torch.ones((msak_sum, 1, 1, 3)).to(annotation.device) * torch.tensor(colors).to(annotation.device)
-        transparency = torch.ones((msak_sum, 1, 1, 1)).to(annotation.device) * 0.7
+        transparency = torch.ones((msak_sum, 1, 1, 1)).to(annotation.device) * 0.5
         visual = torch.cat([color, transparency], dim=-1)
         mask_image = torch.unsqueeze(annotation, -1) * visual
         # Select data according to the index. The index indicates which batch's data to choose at each position, converting the mask_image into a single batch form.

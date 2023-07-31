@@ -8,12 +8,21 @@ import time
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model_path", type=str, default="./weights/FastSAM.pt", help="model"
+        "--model_path", type=str, default="./weights/FastSAM-s.pt", help="model"
+    )
+    parser.add_argument(
+        "--r", type=int, default="0", help="RGB R"
+    )
+    parser.add_argument(
+        "--g", type=int, default="0", help="RGB G"
+    )
+    parser.add_argument(
+        "--b", type=int, default="0", help="RGB B"
     )
     parser.add_argument(
         "--img_path", type=str, default="./images/dogs.jpg", help="path to image file"
     )
-    parser.add_argument("--imgsz", type=int, default=1024, help="image size")
+    parser.add_argument("--imgsz", type=int, default=256, help="image size")
     parser.add_argument(
         "--iou",
         type=float,
@@ -21,10 +30,10 @@ def parse_args():
         help="iou threshold for filtering the annotations",
     )
     parser.add_argument(
-        "--text_prompt", type=str, default=None, help='use text prompt eg: "a dog"'
+        "--text_prompt", type=str, default="person", help='use text prompt eg: "a dog"'
     )
     parser.add_argument(
-        "--conf", type=float, default=0.4, help="object confidence threshold"
+        "--conf", type=float, default=0.7, help="object confidence threshold"
     )
     parser.add_argument(
         "--output", type=str, default="./output/", help="image save path"
@@ -78,9 +87,9 @@ def nothing(x):
 
 def main(args):
 
-    model = FastSAM('weights/FastSAM-s.pt')
+    model = FastSAM(args.model_path)
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     # Set the interval in seconds for capturing frames
 
@@ -94,7 +103,7 @@ def main(args):
             source=frame,
             device=args.device,
             retina_masks=True,
-            imgsz=256,
+            imgsz=args.imgsz,
             conf=0.7,
             iou=0.9,
         )
@@ -129,7 +138,7 @@ def main(args):
         # ann = prompt_process.box_prompt(bboxes=[[200, 200, 300, 300], [500, 500, 600, 600]])
 
         # # text prompt
-        ann = prompt_process.text_prompt(text='person')
+        ann = prompt_process.text_prompt(text=args.text_prompt)
 
         # # point prompt
         # # points default [[0,0]] [[x1,y1],[x2,y2]]
@@ -140,8 +149,12 @@ def main(args):
         # points default [[0,0]] [[x1,y1],[x2,y2]]
         # point_label default [0] [1,0] 0:background, 1:foreground
         # ann = prompt_process.point_prompt(points=[[620, 360]], pointlabel=[1])
-
-        img = prompt_process.plot_to_result1(frame, annotations=ann, withContours=args.withContours)
+        colors = [args.r / 255, args.g / 255, args.b / 255]
+        img = prompt_process.plot_to_result1(frame,
+                                             annotations=ann,
+                                             withContours=args.withContours,
+                                             apply_gaussian_blur=True,
+                                             colors=colors)
 
         # cv2.putText(frame, f'FPS: {int(fps)}', (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
         cv2.imshow('frame', frame)

@@ -1,7 +1,0 @@
-*.pyc
-*.pyo
-*.pyd
-.DS_Store
-.idea
-weights/
-gradio_cached_examples

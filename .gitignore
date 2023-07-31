@@ -1,0 +1,7 @@
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+.idea
+fastsam/FastSAM/weights/
+gradio_cached_examples
